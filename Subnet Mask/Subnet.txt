@@ -1,0 +1,27 @@
+Manual
+ip route 192.168.45.0 255.255.255.240 10.10.10.2
+ip route 192.168.40.0 255.255.255.240 10.10.10.1
+
+
+
+Auto
+# Global configuration mode'a geçin
+configure terminal
+
+# RIP'i etkinleştirin
+router rip
+
+# RIP version 2'yi kullanın (daha gelişmiş)
+version 2
+
+# Auto-summary'yi kapatın (subnet'leri tam olarak tanıyabilmek için)
+no auto-summary
+
+# Bağlı olduğu network'leri tanımlayın
+network 192.168.40.0    # Sol router için (LAN network)
+network 192.168.45.0    # Sağ router için (LAN network)
+network 10.0.0.0        # Her iki router için (WAN network)
+
+# Configuration'dan çıkın
+exit
+exit
