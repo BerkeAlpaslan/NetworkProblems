@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 3: Broadcast Storm - Network Admin Guide</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Broadcast Storm - Layer 2 Loop</h1>
+            <div class="problem-info">
+                <span>Problem #3</span>
+                <span>OSI Layer: L2 - Data Link Layer</span>
+                <span>Impact: Critical</span>
+                <span>Prevalence: High</span>
+            </div>
+        </header>
+
+        <nav class="nav-buttons">
+            <a href="../problem2/index.html" class="nav-btn">← Previous Problem</a>
+            <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+            <a href="../problem4/index.html" class="nav-btn">Next Problem →</a>
+        </nav>
+
+        <main class="content">
+            <section>
+                <h2>Problem Definition</h2>
+                
+                <h3>What is a Broadcast Storm?</h3>
+                <p>A broadcast storm occurs when broadcast packets continuously flood a network segment, consuming all available bandwidth and processing power. This Layer 2 (Data Link Layer) problem typically results from network loops where broadcast frames circulate indefinitely, multiplying exponentially until the network becomes completely unusable.</p>
+                
+                <p>In Ethernet networks, broadcasts are essential for protocols like ARP and DHCP. However, when redundant paths exist without proper loop prevention mechanisms, a single broadcast frame can:</p>
+                <ul>
+                    <li>Be forwarded by multiple switches</li>
+                    <li>Return to the originating switch</li>
+                    <li>Be rebroadcast infinitely</li>
+                    <li>Multiply at each switch, creating an exponential growth of traffic</li>
+                </ul>
+
+                <h3>The Scenario</h3>
+                <p>In this network setup:</p>
+                <ul>
+                    <li>Six end devices (PCs) with IP addresses from 192.168.1.2 to 192.168.1.7</li>
+                    <li>Three interconnected switches creating a physical loop</li>
+                    <li>All devices on the same VLAN (VLAN 1)</li>
+                    <li>Spanning Tree Protocol disabled on all switches</li>
+                    <li>The redundant connections between switches create multiple paths for frames</li>
+                </ul>
+
+                <p>The triangular topology creates a perfect environment for broadcast storms when STP is disabled. Any broadcast from any device will circulate endlessly through all three switches.</p>
+
+                <div class="info-box">
+                    <strong>Note:</strong> This problem is best observed in Cisco Packet Tracer's Simulation Mode, where you can visually see broadcast packets multiplying and circulating indefinitely through the switch loop, eventually overwhelming the network.
+                </div>
+
+                <img src="images/Broadcast Storm Problem.png" alt="Broadcast Storm Problem" class="problem-image">
+                
+                <a href="tracers/Broadcast Storm Problem.pkt" class="tracer-link">Open Problem Scenario in Packet Tracer</a>
+            </section>
+
+            <section>
+                <h2>Affected Systems</h2>
+                <ul>
+                    <li>All devices on the affected network segment</li>
+                    <li>Switch CPU and memory resources</li>
+                    <li>Network applications and services</li>
+                    <li>VoIP and video conferencing systems</li>
+                    <li>File transfers and database connections</li>
+                    <li>DHCP and DNS services</li>
+                    <li>Any broadcast-dependent protocols</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Symptoms and Diagnosis</h2>
+                
+                <h3>User-Reported Symptoms:</h3>
+                <ul>
+                    <li>"Network is completely down"</li>
+                    <li>"Internet connection extremely slow or unavailable"</li>
+                    <li>"Cannot access any network resources"</li>
+                    <li>"Computer running very slowly"</li>
+                    <li>"Network adapter constantly blinking"</li>
+                </ul>
+
+                <h3>Technical Indicators:</h3>
+                <ul>
+                    <li>Switch CPU utilization at 90-100%</li>
+                    <li>Network interface LEDs constantly active</li>
+                    <li>Extremely high broadcast packet counts</li>
+                    <li>Network timeouts and failures</li>
+                    <li>Switch console unresponsive</li>
+                </ul>
+
+                <h3>Diagnostic Commands:</h3>
+                <p><strong>Check Spanning Tree Status:</strong></p>
+                <div class="code-block">
+                    <pre>Switch# show spanning-tree
+
+# When STP is disabled (Problem state):
+No spanning tree instance exists.
+
+# When STP is enabled (Solution state):
+VLAN0001
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32769
+             Address     000A.4118.359D
+             Cost        4
+             Port        25(GigabitEthernet0/1)
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
+             Address     0050.0F74.296B
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  20
+
+Interface        Role Sts Cost      Prio.Nbr Type
+---------------- ---- --- --------- -------- --------------------------------
+Fa0/2            Desg FWD 19        128.2    P2p
+Fa0/1            Desg FWD 19        128.1    P2p
+Gi0/2            Desg FWD 4         128.26   P2p
+Gi0/1            Root FWD 4         128.25   P2p</pre>
+                </div>
+
+                <p><strong>Monitor Interface Statistics:</strong></p>
+                <div class="code-block">
+                    <pre>Switch# show interfaces counters
+Switch# show interfaces | include broadcast
+  Received 58291045 broadcasts, 0 runts, 0 giants</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>Solution Steps</h2>
+
+                <h3>Immediate Mitigation</h3>
+                <p>The solution is straightforward but critical: enable Spanning Tree Protocol on all switches to prevent loops.</p>
+
+                <p><strong>Implementation Steps:</strong></p>
+
+                <ol>
+                    <li><strong>Access Each Switch:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Switch> enable
+Switch# configure terminal</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Enable Spanning Tree Protocol:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Switch(config)# spanning-tree vlan 1
+Switch(config)# exit</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Verify STP is Running:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Switch# show spanning-tree summary
+
+# Before enabling STP:
+Switch is in pvst mode
+Root bridge for:
+Extended system ID           is enabled
+Portfast Default             is disabled
+PortFast BPDU Guard Default  is disabled
+Portfast BPDU Filter Default is disabled
+Loopguard Default            is disabled
+EtherChannel misconfig guard is disabled
+UplinkFast                   is disabled
+BackboneFast                 is disabled
+Configured Pathcost method used is short
+
+Name                   Blocking Listening Learning Forwarding STP Active
+---------------------- -------- --------- -------- ---------- ----------
+                              0         0        0          0          0
+---------------------- -------- --------- -------- ---------- ----------
+1 vlans                       0         0        0          0          0
+
+# After enabling STP:
+Switch is in pvst mode
+Root bridge for:
+Extended system ID           is enabled
+Portfast Default             is disabled
+PortFast BPDU Guard Default  is disabled
+Portfast BPDU Filter Default is disabled
+Loopguard Default            is disabled
+EtherChannel misconfig guard is disabled
+UplinkFast                   is disabled
+BackboneFast                 is disabled
+Configured Pathcost method used is short
+
+Name                   Blocking Listening Learning Forwarding STP Active
+---------------------- -------- --------- -------- ---------- ----------
+VLAN0001                      0         0        0          4          4
+---------------------- -------- --------- -------- ---------- ----------
+1 vlans                       0         0        0          4          4</pre>
+                </div>
+
+                <ol start="4">
+                    <li><strong>Apply to All Three Switches:</strong></li>
+                </ol>
+                <p>Repeat the above configuration on Switch1, Switch2, and Switch3.</p>
+
+                <img src="images/Broadcast Storm Solution.png" alt="Broadcast Storm Solution" class="problem-image">
+                
+                <a href="tracers/Broadcast Storm Solution.pkt" class="tracer-link">Open Solution in Packet Tracer</a>
+
+                <h3>How STP Prevents Broadcast Storms</h3>
+                <p>Once enabled, Spanning Tree Protocol:</p>
+                <ol>
+                    <li>Elects a root bridge based on bridge priority and MAC address</li>
+                    <li>Calculates the best path from each switch to the root</li>
+                    <li>Blocks redundant ports to eliminate loops</li>
+                    <li>Maintains a loop-free topology while keeping backup paths ready</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Alternative Solutions</h2>
+                <ol>
+                    <li><strong>Manual Loop Prevention:</strong>
+                        <ul>
+                            <li>Physically disconnect one of the redundant links</li>
+                            <li>Not recommended as it eliminates redundancy benefits</li>
+                        </ul>
+                    </li>
+                    <li><strong>Rapid Spanning Tree Protocol (RSTP):</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Switch(config)# spanning-tree mode rapid-pvst</pre>
+                </div>
+                <ul>
+                    <li>Faster convergence than traditional STP</li>
+                    <li>Better for modern networks</li>
+                </ul>
+
+                <ol start="3">
+                    <li><strong>Port Security and BPDU Guard:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Switch(config-if)# spanning-tree bpduguard enable
+Switch(config-if)# spanning-tree portfast</pre>
+                </div>
+                <ul>
+                    <li>Prevents unauthorized switches from creating loops</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Preventive Measures</h2>
+                <ol>
+                    <li><strong>Network Design Best Practices:</strong>
+                        <ul>
+                            <li>Always enable STP before connecting redundant links</li>
+                            <li>Document all network connections</li>
+                            <li>Use different VLANs to segment broadcast domains</li>
+                            <li>Implement proper change management procedures</li>
+                        </ul>
+                    </li>
+                    <li><strong>Proactive Configuration:</strong>
+                        <ul>
+                            <li>Enable STP on all switches by default</li>
+                            <li>Configure root bridge priority appropriately</li>
+                            <li>Use BPDU Guard on access ports</li>
+                            <li>Implement storm control as backup protection</li>
+                        </ul>
+                    </li>
+                    <li><strong>Monitoring and Alerts:</strong>
+                        <ul>
+                            <li>Monitor broadcast traffic levels</li>
+                            <li>Set alerts for high CPU utilization on switches</li>
+                            <li>Regular STP topology verification</li>
+                            <li>Automated configuration compliance checks</li>
+                        </ul>
+                    </li>
+                    <li><strong>Storm Control Configuration:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Switch(config-if)# storm-control broadcast level 20
+Switch(config-if)# storm-control action shutdown</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>Solution Verification</h2>
+                <p>After implementing the solution:</p>
+
+                <ol>
+                    <li><strong>Verify STP Status:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Switch# show spanning-tree vlan 1
+# Should show active STP with designated and blocked ports</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Check Broadcast Levels:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Switch# show interfaces | include broadcast
+# Broadcast counts should stabilize</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Test Network Connectivity:</strong>
+                        <ul>
+                            <li>Ping between all devices should succeed</li>
+                            <li>Network services should be restored</li>
+                            <li>CPU utilization should return to normal (&lt;20%)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Monitor in Simulation Mode:</strong>
+                        <ul>
+                            <li>Broadcast packets should no longer loop</li>
+                            <li>One path should show as blocked (orange indicator)</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Real-World Implementation Example</h2>
+                
+                <h3>Case Study: University Campus Network Outage</h3>
+                <p>A university experienced a complete network outage affecting 5,000 students and staff when a well-meaning technician connected two network closets with an additional cable "for redundancy."</p>
+                
+                <p><strong>The Crisis:</strong></p>
+                <ul>
+                    <li>Network collapsed within 30 seconds</li>
+                    <li>All services including email, web, and VoIP failed</li>
+                    <li>Emergency communication systems affected</li>
+                    <li>Classes disrupted campus-wide</li>
+                </ul>
+
+                <p><strong>Root Cause:</strong></p>
+                <ul>
+                    <li>New connection created a loop between building switches</li>
+                    <li>STP was disabled on older switches for "performance reasons"</li>
+                    <li>Broadcast storm propagated across entire campus backbone</li>
+                </ul>
+
+                <p><strong>Resolution:</strong></p>
+                <ol>
+                    <li>Physically disconnected the redundant link (immediate fix)</li>
+                    <li>Enabled STP on all switches campus-wide</li>
+                    <li>Configured RSTP for faster convergence</li>
+                    <li>Implemented BPDU Guard on all access ports</li>
+                </ol>
+
+                <p><strong>Outcome:</strong></p>
+                <ul>
+                    <li>Network restored within 15 minutes</li>
+                    <li>Zero broadcast storm incidents in following 3 years</li>
+                    <li>Improved network redundancy with proper STP configuration</li>
+                    <li>Saved estimated $50,000 in lost productivity per potential incident</li>
+                </ul>
+            </section>
+
+            <nav class="nav-buttons bottom">
+                <a href="../problem2/index.html" class="nav-btn">← Previous Problem</a>
+                <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+                <a href="../problem4/index.html" class="nav-btn">Next Problem →</a>
+            </nav>
+        </main>
+
+        <footer class="footer">
+            <p>Network Admin Guide - Final Design Project - 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

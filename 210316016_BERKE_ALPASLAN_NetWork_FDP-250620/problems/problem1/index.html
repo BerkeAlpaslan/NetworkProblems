@@ -30,7 +30,10 @@
                 <h3>What is Subnet Mismatch?</h3>
                 <p>Subnet mismatch occurs when devices intended to communicate directly on the same local network are configured with IP addresses from different subnets. This is a fundamental Layer 3 (Network Layer) issue that prevents direct communication between devices, even when they are physically connected to the same network infrastructure.</p>
                 
-                <p>In this specific scenario, we have three devices connected to the same switch using a /28 subnet mask (255.255.255.240). With this mask:</p>
+                <p>In a properly configured network, all devices on the same physical segment should share the same network ID. When this principle is violated, devices cannot communicate directly and must rely on routing - which may not be available in simple network setups.</p>
+
+                <h3>The Scenario</h3>
+                <p>In this network setup, we have three devices connected to the same switch using a /28 subnet mask (255.255.255.240). With this mask:</p>
                 <ul>
                     <li>Each subnet contains 16 total IP addresses (2^4 = 16)</li>
                     <li>14 usable host addresses (16 - 2 for network and broadcast)</li>
@@ -39,9 +42,10 @@
 
                 <p>The problem manifests when:</p>
                 <ul>
-                    <li>PC-PT and Laptop-PT are in Network ID 0 (192.168.40.0/28)</li>
-                    <li>Server-PT is in Network ID 176 (192.168.40.176/28)</li>
+                    <li>PC-PT (192.168.40.1/28) and Laptop-PT (192.168.40.9/28) are in Network ID 0</li>
+                    <li>Server-PT (192.168.40.178/28) is in Network ID 176</li>
                     <li>Despite being on the same physical switch, they cannot communicate directly</li>
+                    <li>No router exists to facilitate inter-subnet communication</li>
                 </ul>
 
                 <img src="images/Subnet Mismatch Problem.png" alt="Subnet Mismatch Problem" class="problem-image">

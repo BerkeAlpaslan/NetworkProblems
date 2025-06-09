@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 2: TCP SYN Timeout - Network Admin Guide</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>TCP SYN Timeout - Routing Misconfiguration</h1>
+            <div class="problem-info">
+                <span>Problem #2</span>
+                <span>OSI Layer: L4 - Transport Layer</span>
+                <span>Impact: Critical</span>
+                <span>Prevalence: High</span>
+            </div>
+        </header>
+
+        <nav class="nav-buttons">
+            <a href="../problem1/index.html" class="nav-btn">← Previous Problem</a>
+            <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+            <a href="../problem3/index.html" class="nav-btn">Next Problem →</a>
+        </nav>
+
+        <main class="content">
+            <section>
+                <h2>Problem Definition</h2>
+                
+                <h3>What is TCP SYN Timeout?</h3>
+                <p>TCP SYN timeout occurs when the initial SYN packet of the TCP three-way handshake fails to receive a SYN-ACK response within the expected timeframe. This Transport Layer (L4) issue prevents TCP connections from being established, even though the underlying network infrastructure may appear functional.</p>
+                
+                <p>In a normal TCP three-way handshake:</p>
+                <ol>
+                    <li><strong>SYN</strong>: Client sends a synchronization request to the server</li>
+                    <li><strong>SYN-ACK</strong>: Server acknowledges and sends its own synchronization</li>
+                    <li><strong>ACK</strong>: Client acknowledges the server's response</li>
+                </ol>
+
+                <p>When routing misconfigurations exist, the SYN packet may reach the destination, but the return SYN-ACK packet cannot find its way back to the originating client, resulting in a timeout.</p>
+
+                <h3>The Scenario</h3>
+                <p>In this network setup:</p>
+                <ul>
+                    <li>PC (192.168.1.10/24) attempts to establish HTTP connection to Server (192.168.2.100/24)</li>
+                    <li>Two routers connect the separate networks</li>
+                    <li>Inter-router network uses 10.0.0.0/30 subnet</li>
+                    <li>A misconfigured static route on the right-side router causes asymmetric routing</li>
+                </ul>
+
+                <div class="info-box">
+                    <strong>Note:</strong> This problem is best observed in Cisco Packet Tracer's Simulation Mode, where you can visually track the SYN packet reaching the server but the SYN-ACK failing to return to the client.
+                </div>
+
+                <img src="images/TCP SYN Timeout Problem.png" alt="TCP SYN Timeout Problem" class="problem-image">
+                
+                <a href="tracers/TCP SYN Timeout Problem.pkt" class="tracer-link">Open Problem Scenario in Packet Tracer</a>
+            </section>
+
+            <section>
+                <h2>Affected Systems</h2>
+                <ul>
+                    <li>Web applications and services</li>
+                    <li>Database connections</li>
+                    <li>Email servers (SMTP, POP3, IMAP)</li>
+                    <li>FTP servers</li>
+                    <li>SSH and Telnet sessions</li>
+                    <li>Any TCP-based service</li>
+                    <li>API endpoints</li>
+                    <li>VPN connections</li>
+                    <li>Remote desktop services</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Symptoms and Diagnosis</h2>
+                
+                <h3>User-Reported Symptoms:</h3>
+                <ul>
+                    <li>"Website won't load"</li>
+                    <li>"Connection timeout" errors</li>
+                    <li>"This site can't be reached" messages</li>
+                    <li>Applications hanging during connection attempts</li>
+                    <li>Services appearing "down" despite being operational</li>
+                </ul>
+
+                <h3>Technical Indicators:</h3>
+                <ul>
+                    <li>Browser showing "Request Timeout"</li>
+                    <li>TCP connections stuck in SYN_SENT state</li>
+                    <li>Incomplete TCP handshakes in packet captures</li>
+                    <li>One-way communication (packets leaving but not returning)</li>
+                </ul>
+
+                <h3>Diagnostic Commands:</h3>
+                <p><strong>Testing connectivity:</strong></p>
+                <div class="code-block">
+                    <pre># From PC:
+PC> ping 192.168.2.100    # May succeed (ICMP) while TCP fails
+PC> tracert 192.168.2.100 # Shows path to destination
+
+# Check routing table on routers:
+Router# show ip route
+Router# show ip route static</pre>
+                </div>
+
+                <p><strong>TCP-specific testing:</strong></p>
+                <div class="code-block">
+                    <pre># Using browser:
+http://192.168.2.100    # Results in timeout
+
+# Command line TCP test:
+telnet 192.168.2.100 80    # Hangs and times out</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>Solution Steps</h2>
+
+                <h3>Identifying the Root Cause</h3>
+                <p>The problem stems from an incorrect static route configuration on the right-side router:</p>
+
+                <p><strong>Incorrect Configuration:</strong></p>
+                <div class="code-block">
+                    <pre>Router(config)# ip route 192.168.1.0 255.255.255.0 10.0.0.5</pre>
+                </div>
+
+                <p>This routes return traffic to a non-existent next-hop (10.0.0.5), causing packets to be dropped.</p>
+
+                <h3>Solution: Correct Static Routing</h3>
+                <p><strong>Implementation Steps:</strong></p>
+
+                <ol>
+                    <li><strong>Access the Right-Side Router:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router> enable
+Router# configure terminal</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Remove the Incorrect Route:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# no ip route 192.168.1.0 255.255.255.0 10.0.0.5</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Configure the Correct Static Route:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# ip route 192.168.1.0 255.255.255.0 10.0.0.1
+Router(config)# exit
+Router# write memory</pre>
+                </div>
+
+                <ol start="4">
+                    <li><strong>Verify the Routing Table:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router# show ip route static
+C    192.168.2.0/24 is directly connected, GigabitEthernet0/0
+C    10.0.0.0/30 is directly connected, GigabitEthernet0/1
+S    192.168.1.0/24 [1/0] via 10.0.0.1</pre>
+                </div>
+
+                <img src="images/TCP SYN Timeout Solution.png" alt="TCP SYN Timeout Solution" class="problem-image">
+                
+                <a href="tracers/TCP SYN Timeout Solution.pkt" class="tracer-link">Open Solution in Packet Tracer</a>
+
+                <h3>Alternative Solutions</h3>
+                <ol>
+                    <li><strong>Dynamic Routing Protocols:</strong>
+                        <ul>
+                            <li>Implement OSPF or EIGRP to automatically manage routes</li>
+                            <li>Prevents manual configuration errors</li>
+                        </ul>
+                    </li>
+                    <li><strong>Bidirectional Route Verification:</strong>
+                        <ul>
+                            <li>Always configure routes in both directions</li>
+                            <li>Test with tools that verify return paths</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Preventive Measures</h2>
+                <ol>
+                    <li><strong>Routing Best Practices:</strong>
+                        <ul>
+                            <li>Document all static routes with purpose and next-hop details</li>
+                            <li>Use consistent naming conventions for route descriptions</li>
+                            <li>Implement route validation scripts</li>
+                            <li>Regular routing table audits</li>
+                        </ul>
+                    </li>
+                    <li><strong>Change Management:</strong>
+                        <ul>
+                            <li>Test routing changes in lab environment first</li>
+                            <li>Implement rollback procedures</li>
+                            <li>Use configuration management tools</li>
+                            <li>Peer review for routing changes</li>
+                        </ul>
+                    </li>
+                    <li><strong>Monitoring and Alerting:</strong>
+                        <ul>
+                            <li>Set up TCP connection monitoring</li>
+                            <li>Alert on high SYN timeout rates</li>
+                            <li>Monitor routing table changes</li>
+                            <li>Implement synthetic transaction monitoring</li>
+                        </ul>
+                    </li>
+                    <li><strong>Network Documentation:</strong>
+                        <ul>
+                            <li>Maintain up-to-date network diagrams</li>
+                            <li>Document all inter-network connections</li>
+                            <li>Keep routing policy documentation current</li>
+                            <li>Regular documentation reviews</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Solution Verification</h2>
+                <p>After implementing the correct routing:</p>
+
+                <ol>
+                    <li><strong>Verify HTTP Connectivity:</strong>
+                        <ul>
+                            <li>Browser successfully loads http://192.168.2.100</li>
+                            <li>Page displays without timeout errors</li>
+                        </ul>
+                    </li>
+                    <li><strong>TCP Connection Testing:</strong></li>
+                </ol>
+
+                <div class="code-block">
+                    <pre># Successful telnet connection:
+PC> telnet 192.168.2.100 80
+Trying 192.168.2.100...
+Connected to 192.168.2.100</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Packet Analysis:</strong>
+                        <ul>
+                            <li>Run Packet Tracer in Simulation Mode</li>
+                            <li>Observe complete TCP three-way handshake:
+                                <ul>
+                                    <li>SYN packet reaches server</li>
+                                    <li>SYN-ACK returns to client</li>
+                                    <li>ACK completes the handshake</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong>Expected Results:</strong>
+                        <ul>
+                            <li>Zero TCP timeouts</li>
+                            <li>Consistent sub-second connection establishment</li>
+                            <li>Bidirectional traffic flow confirmed</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Real-World Implementation Example</h2>
+                
+                <h3>Case Study: E-Commerce Platform Intermittent Outages</h3>
+                <p>A mid-size e-commerce company experienced intermittent "site unavailable" reports from customers, despite servers showing as operational.</p>
+                
+                <p><strong>The Investigation:</strong></p>
+                <ul>
+                    <li>Web servers were running normally</li>
+                    <li>Database connections from web servers worked fine</li>
+                    <li>Only external customer connections failed</li>
+                    <li>Problem occurred after network maintenance</li>
+                </ul>
+
+                <p><strong>Root Cause Discovery:</strong></p>
+                <ul>
+                    <li>Network team had added a "security route" during maintenance</li>
+                    <li>Route directed return traffic to a non-existent firewall IP</li>
+                    <li>Internal traffic unaffected due to different routing path</li>
+                </ul>
+
+                <p><strong>Resolution:</strong></p>
+                <ul>
+                    <li>Corrected static route to point to actual firewall</li>
+                    <li>Implemented route verification checklist</li>
+                    <li>Added TCP connection monitoring</li>
+                </ul>
+
+                <p><strong>Outcome:</strong></p>
+                <ul>
+                    <li>Immediate restoration of customer access</li>
+                    <li>Zero routing-related outages in following year</li>
+                    <li>Reduced troubleshooting time from hours to minutes</li>
+                    <li>Improved change management procedures</li>
+                </ul>
+            </section>
+
+            <nav class="nav-buttons bottom">
+                <a href="../problem1/index.html" class="nav-btn">← Previous Problem</a>
+                <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+                <a href="../problem3/index.html" class="nav-btn">Next Problem →</a>
+            </nav>
+        </main>
+
+        <footer class="footer">
+            <p>Network Admin Guide - Final Design Project - 2025</p>
+        </footer>
+    </div>
+</body>
+</html>
