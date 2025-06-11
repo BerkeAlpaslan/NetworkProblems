@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 8: IP Address Conflict - Network Admin Guide</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>IP Address Conflict</h1>
+            <div class="problem-info">
+                <span>Problem #8</span>
+                <span>OSI Layer: L3 - Network Layer</span>
+                <span>Impact: Critical</span>
+                <span>Prevalence: High</span>
+            </div>
+        </header>
+
+        <nav class="nav-buttons">
+            <a href="../problem7/index.html" class="nav-btn">← Previous Problem</a>
+            <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+            <a href="../problem9/index.html" class="nav-btn">Next Problem →</a>
+        </nav>
+
+        <main class="content">
+            <section>
+                <h2>Problem Definition</h2>
+                
+                <h3>What is IP Address Conflict?</h3>
+                <p>IP address conflict occurs when two or more devices on the same network are assigned the same IP address. This Layer 3 (Network Layer) problem causes network instability, intermittent connectivity, and unpredictable communication failures. Since IP addresses must be unique within a network segment, conflicts result in:</p>
+                <ul>
+                    <li>ARP table corruption</li>
+                    <li>Intermittent connectivity for affected devices</li>
+                    <li>Random packet delivery to wrong devices</li>
+                    <li>Network performance degradation</li>
+                    <li>Complete communication failure for one device</li>
+                </ul>
+
+                <h3>How IP Conflicts Manifest</h3>
+                <p>When an IP conflict occurs:</p>
+                <ol>
+                    <li>Both devices respond to ARP requests for the same IP</li>
+                    <li>The device that responds first gets recorded in ARP tables</li>
+                    <li>Network switches update MAC address tables inconsistently</li>
+                    <li>Only one device can communicate at a time with any given host</li>
+                    <li>Users experience random connectivity issues</li>
+                </ol>
+
+                <h3>The Scenario</h3>
+                <p>In this network setup:</p>
+                <ul>
+                    <li>Router (192.168.1.1/24) with DHCP pool: 192.168.1.2-4 (only 3 addresses)</li>
+                    <li>Three devices obtain IPs via DHCP</li>
+                    <li>A fourth device with static IP 192.168.1.2 joins the network later</li>
+                    <li>Result: IP conflict between DHCP-assigned and static IP</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>IMPORTANT NOTE:</strong> To properly simulate this conflict in Cisco Packet Tracer:
+                    <ol>
+                        <li>Start the simulation with the static IP device (192.168.1.2) DISCONNECTED from the switch</li>
+                        <li>Allow DHCP devices to obtain their IPs first (wait for all devices to get IPs)</li>
+                        <li>After DHCP assignment is complete, connect the static IP device to the switch</li>
+                        <li>This creates a realistic IP conflict scenario</li>
+                        <li>Test the conflict by pinging 192.168.1.2 from another device (e.g., 192.168.1.4)</li>
+                    </ol>
+                </div>
+
+                <img src="images/IP Address Conflict Problem.png" alt="IP Conflict - Before Static Device Connection" class="problem-image">
+                <p style="text-align: center; font-style: italic;">Initial state: Static IP device not yet connected</p>
+                
+                <a href="tracers/IP Address Conflict Problem.pkt" class="tracer-link">Open Problem Scenario in Packet Tracer</a>
+
+                <img src="images/IP Address Conflict Problem 2.png" alt="IP Conflict - After Static Device Connection" class="problem-image">
+                <p style="text-align: center; font-style: italic;">After connecting static device: Ping to 192.168.1.2 shows ARP table with conflicting device</p>
+            </section>
+
+            <section>
+                <h2>Affected Systems</h2>
+                <ul>
+                    <li>Devices with conflicting IP addresses</li>
+                    <li>Network services dependent on affected devices</li>
+                    <li>ARP tables on all network devices</li>
+                    <li>Applications connecting to conflicted IPs</li>
+                    <li>Network monitoring and management systems</li>
+                    <li>Any device trying to communicate with the conflicted IP</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Symptoms and Diagnosis</h2>
+                
+                <h3>User-Reported Symptoms:</h3>
+                <ul>
+                    <li>"Network connection works sometimes"</li>
+                    <li>"Cannot access shared resources intermittently"</li>
+                    <li>"Ping works occasionally then fails"</li>
+                    <li>"Connection drops randomly"</li>
+                    <li>"Different devices respond at different times"</li>
+                </ul>
+
+                <h3>Technical Indicators:</h3>
+                <ul>
+                    <li>Windows shows "IP address conflict" warning</li>
+                    <li>Inconsistent ping responses</li>
+                    <li>ARP table shows changing MAC addresses</li>
+                    <li>Network logs show duplicate IP alerts</li>
+                    <li>Intermittent service availability</li>
+                </ul>
+
+                <h3>Diagnostic Commands:</h3>
+                <p><strong>Testing for IP Conflicts:</strong></p>
+                <div class="code-block">
+                    <pre># From another device (e.g., 192.168.1.4):
+ping 192.168.1.2
+# May get responses from different MAC addresses
+
+# Check ARP table:
+arp -a
+# Look for duplicate IPs or changing MAC addresses
+
+# On Windows (affected device):
+ipconfig /all
+# May show IP conflict detected</pre>
+                </div>
+
+                <p><strong>Identifying Conflicting Devices:</strong></p>
+                <div class="code-block">
+                    <pre># Clear ARP cache and retest:
+arp -d *
+ping 192.168.1.2
+arp -a
+# Note which MAC address responds
+
+# Repeat to see if MAC changes:
+arp -d 192.168.1.2
+ping 192.168.1.2
+arp -a
+# Different MAC indicates conflict</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>Solution Steps</h2>
+
+                <h3>Immediate Resolution</h3>
+                <p>The solution involves expanding the DHCP pool and ensuring all devices use DHCP to prevent conflicts.</p>
+
+                <p><strong>Implementation Steps:</strong></p>
+
+                <ol>
+                    <li><strong>Expand DHCP Pool:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router> enable
+Router# configure terminal
+Router(config)# no ip dhcp excluded-address 192.168.1.5 192.168.1.254
+Router(config)# exit</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Reconfigure Static Device to DHCP:</strong>
+                        <ul>
+                            <li>Change from static IP to DHCP client</li>
+                            <li>This allows DHCP server to manage all IP assignments</li>
+                            <li>DHCP inherently prevents conflicts</li>
+                        </ul>
+                    </li>
+                    <li><strong>Verify Expanded Pool:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router# show ip dhcp pool
+# Should show available addresses: 192.168.1.2-254</pre>
+                </div>
+
+                <img src="images/IP Address Conflict Solution.png" alt="IP Conflict Solution" class="problem-image">
+                
+                <a href="tracers/IP Address Conflict Solution.pkt" class="tracer-link">Open Solution in Packet Tracer</a>
+
+                <h3>Alternative Solutions</h3>
+                <ol>
+                    <li><strong>DHCP Conflict Detection:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# ip dhcp conflict logging
+Router(config)# ip dhcp conflict resolution
+# DHCP server pings before assigning</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Static IP Exclusions:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# ip dhcp excluded-address 192.168.1.2
+# Exclude static IPs from DHCP pool</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>DHCP Reservations:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# ip dhcp pool RESERVED
+Router(dhcp-config)# host 192.168.1.2 255.255.255.0
+Router(dhcp-config)# client-identifier 01aa.bbcc.dd.ee.ff
+# Reserve specific IP for specific MAC</pre>
+                </div>
+
+                <ol start="4">
+                    <li><strong>IP Address Management (IPAM):</strong>
+                        <ul>
+                            <li>Deploy IPAM solution</li>
+                            <li>Centralized IP tracking</li>
+                            <li>Automated conflict detection</li>
+                            <li>IP assignment documentation</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Preventive Measures</h2>
+                <ol>
+                    <li><strong>DHCP Best Practices:</strong>
+                        <ul>
+                            <li>Use DHCP for all client devices</li>
+                            <li>Configure adequate pool size</li>
+                            <li>Enable conflict detection</li>
+                            <li>Regular DHCP database maintenance</li>
+                        </ul>
+                    </li>
+                    <li><strong>Static IP Management:</strong>
+                        <ul>
+                            <li>Document all static assignments</li>
+                            <li>Use separate range for static IPs</li>
+                            <li>Exclude static range from DHCP</li>
+                            <li>Regular IP audits</li>
+                        </ul>
+                    </li>
+                    <li><strong>Network Monitoring:</strong>
+                        <ul>
+                            <li>Deploy IP conflict detection tools</li>
+                            <li>Monitor ARP table changes</li>
+                            <li>Set alerts for duplicate IPs</li>
+                            <li>Regular network scans</li>
+                        </ul>
+                    </li>
+                    <li><strong>Administrative Procedures:</strong>
+                        <ul>
+                            <li>IP assignment approval process</li>
+                            <li>Change management for IP changes</li>
+                            <li>Regular training on IP management</li>
+                            <li>Maintain IP allocation spreadsheet</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Solution Verification</h2>
+                <p>After implementing the solution:</p>
+
+                <ol>
+                    <li><strong>Verify No Conflicts:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre># From multiple devices, ping the previously conflicted IP:
+ping 192.168.1.2
+# Should get consistent responses from same MAC
+
+# Check ARP tables:
+arp -a
+# MAC address should remain constant</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Check DHCP Assignments:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router# show ip dhcp binding
+# All devices should have unique IPs</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Monitor for Stability:</strong>
+                        <ul>
+                            <li>No IP conflict warnings</li>
+                            <li>Consistent network connectivity</li>
+                            <li>Stable ARP tables</li>
+                            <li>All devices accessible</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Real-World Implementation Example</h2>
+                
+                <h3>Case Study: Hospital Network IP Conflict Crisis</h3>
+                <p>A 200-bed hospital experienced critical network failures affecting patient monitoring systems due to IP conflicts.</p>
+                
+                <p><strong>The Problem:</strong></p>
+                <ul>
+                    <li>Biomedical devices configured with static IPs</li>
+                    <li>IT expanded network without proper documentation</li>
+                    <li>New workstations received DHCP IPs conflicting with medical devices</li>
+                    <li>Patient monitoring intermittently failed</li>
+                </ul>
+
+                <p><strong>Critical Impact:</strong></p>
+                <ul>
+                    <li>Vital signs monitors disconnecting randomly</li>
+                    <li>Medication dispensing systems offline</li>
+                    <li>Electronic health records inaccessible</li>
+                    <li>Patient safety at risk</li>
+                </ul>
+
+                <p><strong>Emergency Resolution:</strong></p>
+                <ol>
+                    <li>Identified all static medical device IPs via network scan</li>
+                    <li>Created emergency DHCP exclusion list:</li>
+                </ol>
+                <div class="code-block">
+                    <pre>ip dhcp excluded-address 192.168.100.1 192.168.100.100
+# Reserved for medical devices</pre>
+                </div>
+                
+                <ol start="3">
+                    <li>Reconfigured DHCP pool for workstations:</li>
+                </ol>
+                <div class="code-block">
+                    <pre>ip dhcp pool WORKSTATIONS
+network 192.168.100.101 255.255.255.0</pre>
+                </div>
+
+                <ol start="4">
+                    <li>Implemented DHCP snooping to prevent rogue static IPs</li>
+                </ol>
+
+                <p><strong>Long-term Solution:</strong></p>
+                <ul>
+                    <li>Deployed enterprise IPAM system</li>
+                    <li>Created separate VLANs for medical devices</li>
+                    <li>Implemented 802.1X authentication</li>
+                    <li>Regular IP conflict scanning</li>
+                </ul>
+
+                <p><strong>Outcome:</strong></p>
+                <ul>
+                    <li>Zero IP conflicts in 18 months</li>
+                    <li>99.99% network availability achieved</li>
+                    <li>Improved patient safety</li>
+                    <li>Reduced IT incidents by 75%</li>
+                    <li>Compliance with healthcare regulations</li>
+                </ul>
+            </section>
+
+            <nav class="nav-buttons bottom">
+                <a href="../problem7/index.html" class="nav-btn">← Previous Problem</a>
+                <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+                <a href="../problem9/index.html" class="nav-btn">Next Problem →</a>
+            </nav>
+        </main>
+
+        <footer class="footer">
+            <p>Network Admin Guide - Final Design Project - 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

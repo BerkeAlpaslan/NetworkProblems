@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 6: Wi-Fi Coverage Dead Zones - Network Admin Guide</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Wi-Fi Coverage Dead Zones</h1>
+            <div class="problem-info">
+                <span>Problem #6</span>
+                <span>OSI Layer: L1 - Physical Layer</span>
+                <span>Impact: High</span>
+                <span>Prevalence: Very High</span>
+            </div>
+        </header>
+
+        <nav class="nav-buttons">
+            <a href="../problem5/index.html" class="nav-btn">← Previous Problem</a>
+            <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+            <a href="../problem7/index.html" class="nav-btn">Next Problem →</a>
+        </nav>
+
+        <main class="content">
+            <section>
+                <h2>Problem Definition</h2>
+                
+                <h3>What are Wi-Fi Coverage Dead Zones?</h3>
+                <p>Wi-Fi coverage dead zones are areas within a building or space where wireless signals from access points or routers cannot reach effectively, preventing devices from establishing network connections. This Physical Layer (L1) problem occurs due to distance limitations, physical obstacles, and radio frequency attenuation.</p>
+                
+                <p>Wireless signals weaken as they travel through:</p>
+                <ul>
+                    <li>Distance from the transmitter</li>
+                    <li>Walls and building materials</li>
+                    <li>Furniture and obstacles</li>
+                    <li>Interference from other devices</li>
+                    <li>Environmental factors</li>
+                </ul>
+
+                <p>When devices are located in dead zones:</p>
+                <ul>
+                    <li>Cannot detect wireless network SSID</li>
+                    <li>Unable to establish connection</li>
+                    <li>Cannot obtain IP address via DHCP</li>
+                    <li>Complete loss of network connectivity</li>
+                </ul>
+
+                <h3>The Scenario</h3>
+                <p>In this office environment simulation:</p>
+                <ul>
+                    <li>Wireless router placed in one room</li>
+                    <li>Laptop located in a distant room</li>
+                    <li>Physical distance exceeds effective wireless range</li>
+                    <li>Result: Laptop cannot connect to wireless network or obtain DHCP IP address</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>IMPORTANT NOTE:</strong> To view this problem in Cisco Packet Tracer, you must switch to Physical view:
+                    <ol>
+                        <li>Open the simulation</li>
+                        <li>Click on "Physical" tab</li>
+                        <li>Navigate to: Home City → Corporate Office</li>
+                        <li>This shows the actual physical layout of rooms and wireless coverage</li>
+                    </ol>
+                </div>
+
+                <img src="images/WiFi Coverage Dead Zones Problem.png" alt="Wi-Fi Coverage Dead Zone Problem" class="problem-image">
+                
+                <a href="tracers/WiFi Coverage Dead Zones Problem.pkt" class="tracer-link">Open Problem Scenario in Packet Tracer</a>
+            </section>
+
+            <section>
+                <h2>Affected Systems</h2>
+                <ul>
+                    <li>Laptops and mobile devices in remote areas</li>
+                    <li>IoT devices in far corners of buildings</li>
+                    <li>Wireless printers in separate rooms</li>
+                    <li>Security cameras at building perimeters</li>
+                    <li>Employee workstations in expanded office areas</li>
+                    <li>Guest devices in conference rooms</li>
+                    <li>Warehouse scanning equipment</li>
+                    <li>Any wireless device beyond router range</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Symptoms and Diagnosis</h2>
+                
+                <h3>User-Reported Symptoms:</h3>
+                <ul>
+                    <li>"No Wi-Fi networks found"</li>
+                    <li>"Cannot connect to wireless network"</li>
+                    <li>Device shows no available networks</li>
+                    <li>Connection attempts fail repeatedly</li>
+                    <li>"Limited or no connectivity" messages</li>
+                </ul>
+
+                <h3>Technical Indicators:</h3>
+                <ul>
+                    <li>No SSID visible in network list</li>
+                    <li>Signal strength below detectable threshold</li>
+                    <li>DHCP requests timeout</li>
+                    <li>Device remains in disconnected state</li>
+                    <li>No IP address assigned</li>
+                </ul>
+
+                <h3>Physical Environment Factors:</h3>
+                <ul>
+                    <li>Distance between device and router</li>
+                    <li>Number of walls/obstacles</li>
+                    <li>Building materials (concrete, metal)</li>
+                    <li>Router antenna orientation</li>
+                    <li>Interference from other devices</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Solution Steps</h2>
+
+                <h3>Immediate Resolution</h3>
+                <p>The solution involves extending wireless coverage using an Access Point to eliminate dead zones.</p>
+
+                <p><strong>Implementation Steps:</strong></p>
+
+                <ol>
+                    <li><strong>Identify Dead Zone Location:</strong>
+                        <ul>
+                            <li>Map areas with no wireless coverage</li>
+                            <li>Determine optimal placement for coverage extension</li>
+                            <li>Consider central location between router and dead zone</li>
+                        </ul>
+                    </li>
+                    <li><strong>Deploy Wireless Access Point:</strong>
+                        <ul>
+                            <li>Install Access Point in intermediate room</li>
+                            <li>Connect to main network (wired or wireless)</li>
+                            <li>Configure with same SSID for seamless roaming</li>
+                        </ul>
+                    </li>
+                    <li><strong>Access Point Configuration:</strong>
+                        <ul>
+                            <li>Same network name (SSID) as main router</li>
+                            <li>Compatible security settings (WPA2/WPA3)</li>
+                            <li>Non-overlapping channel selection</li>
+                            <li>Appropriate transmit power settings</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <img src="images/WiFi Coverage Dead Zones Solution.png" alt="Wi-Fi Coverage Dead Zone Solution" class="problem-image">
+                
+                <a href="tracers/WiFi Coverage Dead Zones Solution.pkt" class="tracer-link">Open Solution in Packet Tracer</a>
+
+                <h3>Alternative Solutions</h3>
+                <ol>
+                    <li><strong>Wireless Range Extender:</strong>
+                        <ul>
+                            <li>Simple plug-in solution</li>
+                            <li>Extends existing wireless signal</li>
+                            <li>May reduce bandwidth</li>
+                            <li>Good for small coverage gaps</li>
+                        </ul>
+                    </li>
+                    <li><strong>Mesh Network System:</strong>
+                        <ul>
+                            <li>Multiple nodes for complete coverage</li>
+                            <li>Seamless roaming between nodes</li>
+                            <li>Better performance than extenders</li>
+                            <li>Ideal for large areas</li>
+                        </ul>
+                    </li>
+                    <li><strong>Power Line Adapters with Wi-Fi:</strong>
+                        <ul>
+                            <li>Uses electrical wiring for data</li>
+                            <li>Creates new access point</li>
+                            <li>Good for difficult-to-reach areas</li>
+                            <li>Bypasses physical obstacles</li>
+                        </ul>
+                    </li>
+                    <li><strong>Upgrade Router/Antennas:</strong>
+                        <ul>
+                            <li>High-gain antennas for better range</li>
+                            <li>Wi-Fi 6 routers with improved coverage</li>
+                            <li>Directional antennas for specific areas</li>
+                            <li>Multiple antenna configurations</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Preventive Measures</h2>
+                <ol>
+                    <li><strong>Proper Network Planning:</strong>
+                        <ul>
+                            <li>Conduct site surveys before deployment</li>
+                            <li>Map coverage requirements</li>
+                            <li>Plan access point locations</li>
+                            <li>Consider future expansion needs</li>
+                        </ul>
+                    </li>
+                    <li><strong>Optimal Equipment Placement:</strong>
+                        <ul>
+                            <li>Central location for main router</li>
+                            <li>Elevated positions for better coverage</li>
+                            <li>Avoid interference sources</li>
+                            <li>Clear line of sight when possible</li>
+                        </ul>
+                    </li>
+                    <li><strong>Regular Coverage Assessment:</strong>
+                        <ul>
+                            <li>Periodic signal strength testing</li>
+                            <li>User feedback collection</li>
+                            <li>Coverage heat mapping</li>
+                            <li>Dead zone identification</li>
+                        </ul>
+                    </li>
+                    <li><strong>Infrastructure Standards:</strong>
+                        <ul>
+                            <li>Standardize on Wi-Fi 6 or newer</li>
+                            <li>Plan for device density</li>
+                            <li>Implement proper channel planning</li>
+                            <li>Consider building materials in design</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Solution Verification</h2>
+                <p>After implementing the access point:</p>
+
+                <ol>
+                    <li><strong>Coverage Testing:</strong>
+                        <ul>
+                            <li>Laptop successfully detects network SSID</li>
+                            <li>Strong signal strength in previously dead zone</li>
+                            <li>Successful connection establishment</li>
+                        </ul>
+                    </li>
+                    <li><strong>Connectivity Verification:</strong>
+                        <ul>
+                            <li>Device obtains IP address via DHCP</li>
+                            <li>Internet access functional</li>
+                            <li>Stable connection maintained</li>
+                            <li>Seamless roaming between access points</li>
+                        </ul>
+                    </li>
+                    <li><strong>Performance Validation:</strong>
+                        <ul>
+                            <li>Acceptable data transfer speeds</li>
+                            <li>Low latency measurements</li>
+                            <li>No connection drops</li>
+                            <li>Consistent coverage throughout area</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <p><strong>Physical View Verification:</strong></p>
+                <ul>
+                    <li>In Packet Tracer Physical view</li>
+                    <li>Visual confirmation of coverage overlap</li>
+                    <li>No dead zones between access points</li>
+                    <li>Complete coverage of required areas</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Real-World Implementation Example</h2>
+                
+                <h3>Case Study: Growing Tech Startup Office Expansion</h3>
+                <p>A tech startup expanded into adjacent office space but employees in the new area couldn't access Wi-Fi.</p>
+                
+                <p><strong>The Challenge:</strong></p>
+                <ul>
+                    <li>Original router in main office area</li>
+                    <li>New expansion separated by multiple walls</li>
+                    <li>30 employees with no wireless access</li>
+                    <li>Ethernet cabling not immediately available</li>
+                </ul>
+
+                <p><strong>Investigation Results:</strong></p>
+                <ul>
+                    <li>Wi-Fi signal dropped to -85 dBm in new area</li>
+                    <li>Below minimum -70 dBm for reliable connection</li>
+                    <li>Physical distance: 150 feet through 4 walls</li>
+                    <li>Concrete walls causing severe attenuation</li>
+                </ul>
+
+                <p><strong>Quick Solution:</strong></p>
+                <ol>
+                    <li>Deployed wireless access point in hallway between areas</li>
+                    <li>Connected via existing ethernet drop</li>
+                    <li>Configured with same SSID and security</li>
+                    <li>Immediate coverage for all new area employees</li>
+                </ol>
+
+                <p><strong>Long-term Implementation:</strong></p>
+                <ul>
+                    <li>Installed 3 additional access points</li>
+                    <li>Created overlapping coverage zones</li>
+                    <li>Implemented wireless controller for management</li>
+                    <li>Achieved -50 dBm or better throughout office</li>
+                </ul>
+
+                <p><strong>Outcome:</strong></p>
+                <ul>
+                    <li>100% wireless coverage achieved</li>
+                    <li>No dead zones reported in 12 months</li>
+                    <li>Improved employee satisfaction</li>
+                    <li>Supported growth to 75 employees</li>
+                    <li>Prepared infrastructure for future expansion</li>
+                </ul>
+            </section>
+
+            <nav class="nav-buttons bottom">
+                <a href="../problem5/index.html" class="nav-btn">← Previous Problem</a>
+                <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+                <a href="../problem7/index.html" class="nav-btn">Next Problem →</a>
+            </nav>
+        </main>
+
+        <footer class="footer">
+            <p>Network Admin Guide - Final Design Project - 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

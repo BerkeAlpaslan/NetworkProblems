@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 5: DNS Server Misconfiguration - Network Admin Guide</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>DNS Server Misconfiguration</h1>
+            <div class="problem-info">
+                <span>Problem #5</span>
+                <span>OSI Layer: L7 - Application Layer</span>
+                <span>Impact: High</span>
+                <span>Prevalence: Very High</span>
+            </div>
+        </header>
+
+        <nav class="nav-buttons">
+            <a href="../problem4/index.html" class="nav-btn">← Previous Problem</a>
+            <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+            <a href="../problem6/index.html" class="nav-btn">Next Problem →</a>
+        </nav>
+
+        <main class="content">
+            <section>
+                <h2>Problem Definition</h2>
+                
+                <h3>What is DNS Server Misconfiguration?</h3>
+                <p>DNS (Domain Name System) server misconfiguration occurs when client devices are configured with incorrect DNS server IP addresses, preventing them from resolving domain names to IP addresses. This Application Layer (L7) problem prevents users from accessing websites and services by their domain names, even though the network infrastructure and target servers are fully operational.</p>
+                
+                <p>DNS operates as the internet's directory service, translating human-readable domain names (like google.com) into IP addresses (like 8.8.8.8) that computers use to communicate. When clients have the wrong DNS server address:</p>
+                <ul>
+                    <li>Domain name resolution fails completely</li>
+                    <li>Browsers display "Host Name Unresolved" errors</li>
+                    <li>Direct IP connectivity still works</li>
+                    <li>Web services become inaccessible by name</li>
+                </ul>
+
+                <h3>The Scenario</h3>
+                <p>In this network setup:</p>
+                <ul>
+                    <li>Router configured at 192.168.1.1/24</li>
+                    <li>DNS Server at 192.168.1.100/24 with A record: google.com → 8.8.8.8</li>
+                    <li>Web Server at 8.8.8.8 (connected via router port 8.8.8.1)</li>
+                    <li>Two PCs (192.168.1.10/24 and 192.168.1.11/24) misconfigured with wrong DNS server IP (192.168.1.200)</li>
+                    <li>Result: PCs receive "Host Name Unresolved" when trying to access google.com</li>
+                </ul>
+
+                <p>This scenario demonstrates a complete end-to-end DNS and web access failure due to simple misconfiguration.</p>
+
+                <img src="images/problem-state.png" alt="DNS Server Misconfiguration Problem" class="problem-image">
+                
+                <a href="tracers/problem5-issue.pkt" class="tracer-link">Open Problem Scenario in Packet Tracer</a>
+            </section>
+
+            <section>
+                <h2>Affected Systems</h2>
+                <ul>
+                    <li>End-user workstations and laptops</li>
+                    <li>Web browsers and internet applications</li>
+                    <li>Email clients</li>
+                    <li>Software update mechanisms</li>
+                    <li>Cloud-based services</li>
+                    <li>Mobile applications</li>
+                    <li>Any service requiring domain name resolution</li>
+                    <li>VPN clients</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Symptoms and Diagnosis</h2>
+                
+                <h3>User-Reported Symptoms:</h3>
+                <ul>
+                    <li>"Cannot access any websites"</li>
+                    <li>Browser shows "Host Name Unresolved"</li>
+                    <li>"This site can't be reached" errors</li>
+                    <li>Internet appears completely down</li>
+                    <li>Email not connecting to servers</li>
+                </ul>
+
+                <h3>Technical Indicators:</h3>
+                <ul>
+                    <li>DNS lookup failures</li>
+                    <li>Browser unable to resolve domain names</li>
+                    <li>Direct IP access still works</li>
+                    <li>Network connectivity normal</li>
+                    <li>Target servers operational</li>
+                </ul>
+
+                <h3>Diagnostic Commands:</h3>
+                <p><strong>Browser Testing:</strong></p>
+                <div class="code-block">
+                    <pre># Problem state:
+Navigate to: http://google.com
+Result: "Host Name Unresolved"
+
+# Direct IP works:
+Navigate to: http://8.8.8.8
+Result: Page loads successfully</pre>
+                </div>
+
+                <p><strong>DNS Configuration Check:</strong></p>
+                <div class="code-block">
+                    <pre>PC> ipconfig /all
+
+# Problem state shows:
+   IP Address. . . . . . . . . . . . : 192.168.1.10
+   DNS Servers . . . . . . . . . . . : 192.168.1.200
+   # Wrong DNS server IP - this server doesn't exist
+
+# Should show:
+   DNS Servers . . . . . . . . . . . : 192.168.1.100
+   # Correct DNS server IP</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>Solution Steps</h2>
+
+                <h3>Immediate Resolution</h3>
+                <p>The solution requires correcting the DNS server IP address on affected devices.</p>
+
+                <p><strong>Implementation Steps:</strong></p>
+
+                <ol>
+                    <li><strong>Update DNS Server Configuration on Each PC:</strong>
+                        <ul>
+                            <li>Access network adapter settings</li>
+                            <li>Change DNS server from 192.168.1.200 to 192.168.1.100</li>
+                            <li>Apply settings</li>
+                        </ul>
+                    </li>
+                    <li><strong>Configuration Details:</strong></li>
+                </ol>
+
+                <div class="code-block">
+                    <pre># PC1 Configuration:
+IP Address: 192.168.1.10/24
+Default Gateway: 192.168.1.1
+DNS Server: 192.168.1.100  (was 192.168.1.200)
+
+# PC2 Configuration:
+IP Address: 192.168.1.11/24
+Default Gateway: 192.168.1.1
+DNS Server: 192.168.1.100  (was 192.168.1.200)</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Clear DNS Cache:</strong></li>
+                </ol>
+
+                <div class="code-block">
+                    <pre>PC> ipconfig /flushdns
+# Clears any cached incorrect DNS information</pre>
+                </div>
+
+                <img src="images/solution.png" alt="DNS Server Misconfiguration Solution" class="problem-image">
+                
+                <a href="tracers/problem5-solution.pkt" class="tracer-link">Open Solution in Packet Tracer</a>
+
+                <h3>Alternative Solutions</h3>
+                <ol>
+                    <li><strong>DHCP-Based DNS Configuration:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# ip dhcp pool LAN_POOL
+Router(dhcp-config)# network 192.168.1.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.1.1
+Router(dhcp-config)# dns-server 192.168.1.100
+# Automatically provides correct DNS to all DHCP clients</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Secondary DNS Server:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Primary DNS: 192.168.1.100
+Secondary DNS: 8.8.8.8 (Public DNS)
+# Provides redundancy if local DNS fails</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Router as DNS Proxy:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# ip dns server
+Router(config)# ip name-server 192.168.1.100
+# Router forwards DNS queries to correct server</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>Preventive Measures</h2>
+                <ol>
+                    <li><strong>Standardized Configuration:</strong>
+                        <ul>
+                            <li>Use DHCP for automatic DNS assignment</li>
+                            <li>Document correct DNS server addresses</li>
+                            <li>Create configuration templates</li>
+                            <li>Regular configuration audits</li>
+                        </ul>
+                    </li>
+                    <li><strong>DNS Infrastructure Best Practices:</strong>
+                        <ul>
+                            <li>Deploy redundant DNS servers</li>
+                            <li>Monitor DNS server availability</li>
+                            <li>Regular DNS service health checks</li>
+                            <li>Backup DNS configurations</li>
+                        </ul>
+                    </li>
+                    <li><strong>Change Management:</strong>
+                        <ul>
+                            <li>Document all DNS changes</li>
+                            <li>Test DNS changes before deployment</li>
+                            <li>Maintain rollback procedures</li>
+                            <li>Update network diagrams</li>
+                        </ul>
+                    </li>
+                    <li><strong>User Education:</strong>
+                        <ul>
+                            <li>Train users to recognize DNS errors</li>
+                            <li>Create troubleshooting guides</li>
+                            <li>Establish help desk procedures</li>
+                            <li>Regular awareness training</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Solution Verification</h2>
+                <p>After implementing the solution:</p>
+
+                <ol>
+                    <li><strong>Browser Access Test:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre># Navigate to http://google.com
+Result: Website loads successfully
+# DNS resolution now works correctly</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>DNS Resolution Test:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>PC> nslookup google.com
+Server:  192.168.1.100
+Address: 192.168.1.100
+
+Name:    google.com
+Address: 8.8.8.8
+# Shows correct DNS server and resolution</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Complete Connectivity Verification:</strong>
+                        <ul>
+                            <li>All websites accessible by domain name</li>
+                            <li>No "Host Name Unresolved" errors</li>
+                            <li>Email clients connect successfully</li>
+                            <li>All internet services functional</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Real-World Implementation Example</h2>
+                
+                <h3>Case Study: Retail Chain Network Outage</h3>
+                <p>A retail chain with 50 stores experienced widespread "internet outages" across multiple locations simultaneously.</p>
+                
+                <p><strong>The Problem:</strong></p>
+                <ul>
+                    <li>Morning shift: "Cannot access any websites"</li>
+                    <li>Point-of-sale systems failing to reach cloud services</li>
+                    <li>Email systems showing server not found errors</li>
+                    <li>IT verified internet connections were active</li>
+                </ul>
+
+                <p><strong>Investigation Findings:</strong></p>
+                <ul>
+                    <li>Network team had migrated DNS servers overnight</li>
+                    <li>Old DNS server (10.0.1.50) decommissioned</li>
+                    <li>New DNS server (10.0.1.100) operational</li>
+                    <li>Store routers still pointing to old DNS IP</li>
+                </ul>
+
+                <p><strong>Rapid Resolution:</strong></p>
+                <ol>
+                    <li>Created emergency script:</li>
+                </ol>
+                <div class="code-block">
+                    <pre>#!/bin/bash
+# Update DNS on all store routers
+for store in $(cat store_list.txt); do
+  ssh admin@$store "conf t; ip dhcp pool STORE_POOL; 
+  dns-server 10.0.1.100; exit; wr mem"
+done</pre>
+                </div>
+                
+                <ol start="2">
+                    <li>Pushed configuration to all stores via central management</li>
+                    <li>Forced DHCP renewal on all devices</li>
+                    <li>Services restored within 45 minutes</li>
+                </ol>
+
+                <p><strong>Lessons Learned:</strong></p>
+                <ul>
+                    <li>Always update DHCP configurations before decommissioning servers</li>
+                    <li>Implement DNS monitoring across all locations</li>
+                    <li>Maintain accurate network documentation</li>
+                    <li>Test changes in pilot locations first</li>
+                </ul>
+
+                <p><strong>Outcome:</strong></p>
+                <ul>
+                    <li>Prevented estimated $500,000 in lost sales</li>
+                    <li>Implemented automated DNS health monitoring</li>
+                    <li>Created DNS migration checklist</li>
+                    <li>Zero DNS-related outages in following 18 months</li>
+                </ul>
+            </section>
+
+            <nav class="nav-buttons bottom">
+                <a href="../problem4/index.html" class="nav-btn">← Previous Problem</a>
+                <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+                <a href="../problem6/index.html" class="nav-btn">Next Problem →</a>
+            </nav>
+        </main>
+
+        <footer class="footer">
+            <p>Network Admin Guide - Final Design Project - 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

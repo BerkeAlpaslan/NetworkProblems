@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 4: DHCP Pool Exhaustion - Network Admin Guide</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>DHCP Pool Exhaustion</h1>
+            <div class="problem-info">
+                <span>Problem #4</span>
+                <span>OSI Layer: L7 - Application Layer</span>
+                <span>Impact: High</span>
+                <span>Prevalence: Very High</span>
+            </div>
+        </header>
+
+        <nav class="nav-buttons">
+            <a href="../problem3/index.html" class="nav-btn">← Previous Problem</a>
+            <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+            <a href="../problem5/index.html" class="nav-btn">Next Problem →</a>
+        </nav>
+
+        <main class="content">
+            <section>
+                <h2>Problem Definition</h2>
+                
+                <h3>What is DHCP Pool Exhaustion?</h3>
+                <p>DHCP (Dynamic Host Configuration Protocol) pool exhaustion occurs when all available IP addresses in a DHCP server's address pool have been allocated, leaving no addresses for new devices attempting to join the network. This Application Layer (L7) problem prevents new devices from obtaining valid network configurations, effectively denying them network access.</p>
+                
+                <p>DHCP operates by maintaining a pool of available IP addresses that it can lease to clients. When this pool is exhausted due to:</p>
+                <ul>
+                    <li>Insufficient pool size for the number of devices</li>
+                    <li>Misconfiguration limiting available addresses</li>
+                    <li>IP address leaks from devices not releasing addresses</li>
+                    <li>Malicious DHCP starvation attacks</li>
+                </ul>
+
+                <h3>What is APIPA?</h3>
+                <p>When a device cannot obtain an IP address from a DHCP server, Windows-based systems automatically assign themselves an Automatic Private IP Addressing (APIPA) address. APIPA addresses:</p>
+                <ul>
+                    <li>Range from 169.254.0.1 to 169.254.255.254</li>
+                    <li>Use subnet mask 255.255.0.0</li>
+                    <li>Allow limited local communication only</li>
+                    <li>Cannot route beyond the local network segment</li>
+                    <li>Indicate DHCP failure to administrators</li>
+                </ul>
+
+                <h3>The Scenario</h3>
+                <p>In this network setup:</p>
+                <ul>
+                    <li>One router configured as DHCP server (192.168.1.1/24)</li>
+                    <li>Five PCs configured as DHCP clients</li>
+                    <li>DHCP pool artificially limited to only 3 addresses (192.168.1.2-4)</li>
+                    <li>Excluded addresses: 192.168.1.1 (router) and 192.168.1.5-254</li>
+                    <li>Result: Only 3 devices can obtain valid IPs, 2 devices receive APIPA addresses</li>
+                </ul>
+
+                <p>This configuration simulates a real-world scenario where DHCP pool planning fails to account for the actual number of devices needing network access.</p>
+
+                <img src="images/DHCP Pool Exhaustion Problem.png" alt="DHCP Pool Exhaustion Problem" class="problem-image">
+                
+                <a href="tracers/DHCP Pool Exhaustion Problem.pkt" class="tracer-link">Open Problem Scenario in Packet Tracer</a>
+            </section>
+
+            <section>
+                <h2>Affected Systems</h2>
+                <ul>
+                    <li>New devices attempting to join the network</li>
+                    <li>Guest devices and BYOD (Bring Your Own Device)</li>
+                    <li>IoT devices requiring network connectivity</li>
+                    <li>Workstations after lease expiration</li>
+                    <li>Mobile devices and laptops</li>
+                    <li>Network printers and scanners</li>
+                    <li>VoIP phones</li>
+                    <li>Any DHCP-dependent device</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Symptoms and Diagnosis</h2>
+                
+                <h3>User-Reported Symptoms:</h3>
+                <ul>
+                    <li>"Cannot connect to the internet"</li>
+                    <li>"Limited or no connectivity" warnings</li>
+                    <li>"Obtaining IP address" stuck message</li>
+                    <li>"Invalid IP configuration" errors</li>
+                    <li>Random devices working while others don't</li>
+                </ul>
+
+                <h3>Technical Indicators:</h3>
+                <ul>
+                    <li>Devices showing 169.254.x.x IP addresses</li>
+                    <li>DHCP server logs showing "no free leases"</li>
+                    <li>Some devices connected, others not</li>
+                    <li>Network icon showing warning symbol</li>
+                    <li>Unable to ping gateway or DNS servers</li>
+                </ul>
+
+                <h3>Diagnostic Commands:</h3>
+                <p><strong>Check Device IP Configuration:</strong></p>
+                <div class="code-block">
+                    <pre># On affected PC:
+PC> ipconfig
+
+# DHCP failure result:
+   IP Address......................: 169.254.x.x
+   Subnet Mask.....................: 255.255.0.0
+   Default Gateway.................: 0.0.0.0
+
+# Successful DHCP result:
+   IP Address......................: 192.168.1.2
+   Subnet Mask.....................: 255.255.255.0
+   Default Gateway.................: 192.168.1.1</pre>
+                </div>
+
+                <p><strong>Check DHCP Pool Status on Router:</strong></p>
+                <div class="code-block">
+                    <pre>Router> show ip dhcp pool
+
+Pool LIMITED_POOL :
+ Utilization mark (high/low)    : 100 / 0
+ Subnet size (first/next)       : 0 / 0 
+ Total addresses                : 254
+ Leased addresses              : 3
+ Excluded addresses            : 2
+ Pending event                 : none
+
+ 1 subnet is currently in the pool
+ Current index        IP address range                         Leased/Excluded/Total
+ 192.168.1.1          192.168.1.1     - 192.168.1.254          3     / 2     / 254
+
+Router# show ip dhcp binding
+IP address       Client-ID/              Lease expiration
+                Hardware address
+192.168.1.2     0001.42CB.A07C           --
+192.168.1.3     0001.96B4.7E42           --
+192.168.1.4     0060.3E28.6D65           --</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>Solution Steps</h2>
+
+                <h3>Immediate Resolution</h3>
+                <p>The solution involves expanding the DHCP pool to accommodate all devices requiring IP addresses.</p>
+
+                <p><strong>Implementation Steps:</strong></p>
+
+                <ol>
+                    <li><strong>Access Router Configuration:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router> enable
+Router# configure terminal</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Remove the Restrictive Exclusion:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# no ip dhcp excluded-address 192.168.1.5 192.168.1.254</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Add Back Necessary Exclusions Only:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre># Exclude only static IP addresses (if any)
+Router(config)# ip dhcp excluded-address 192.168.1.1</pre>
+                </div>
+
+                <ol start="4">
+                    <li><strong>Verify Expanded Pool:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router> show ip dhcp pool
+
+Pool LIMITED_POOL :
+ Utilization mark (high/low)    : 100 / 0
+ Subnet size (first/next)       : 0 / 0 
+ Total addresses                : 254
+ Leased addresses              : 5
+ Excluded addresses            : 2
+ Pending event                 : none
+
+ 1 subnet is currently in the pool
+ Current index        IP address range                         Leased/Excluded/Total
+ 192.168.1.1          192.168.1.1     - 192.168.1.254          5     / 2     / 254</pre>
+                </div>
+
+                <img src="images/DHCP Pool Exhaustion Solution.png" alt="DHCP Pool Exhaustion Solution" class="problem-image">
+                
+                <a href="tracers/DHCP Pool Exhaustion Solution.pkt" class="tracer-link">Open Solution in Packet Tracer</a>
+
+                <h3>Alternative Solutions</h3>
+                <ol>
+                    <li><strong>Create Additional DHCP Pools:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# ip dhcp pool ADDITIONAL_POOL
+Router(dhcp-config)# network 192.168.2.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.2.1</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Implement Shorter Lease Times:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config)# ip dhcp pool LIMITED_POOL
+Router(dhcp-config)# lease 0 2 0
+# Sets lease time to 2 hours instead of default 24 hours</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Configure DHCP Relay for Multiple Servers:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router(config-if)# ip helper-address 192.168.1.10
+# Points to backup DHCP server</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>Preventive Measures</h2>
+                <ol>
+                    <li><strong>Capacity Planning:</strong>
+                        <ul>
+                            <li>Calculate maximum number of devices</li>
+                            <li>Include 20-30% growth margin</li>
+                            <li>Account for guest and temporary devices</li>
+                            <li>Plan for IoT device proliferation</li>
+                        </ul>
+                    </li>
+                    <li><strong>DHCP Best Practices:</strong>
+                        <ul>
+                            <li>Monitor DHCP pool utilization regularly</li>
+                            <li>Set appropriate lease durations</li>
+                            <li>Implement DHCP snooping for security</li>
+                            <li>Use DHCP reservations for critical devices</li>
+                        </ul>
+                    </li>
+                    <li><strong>Pool Management:</strong>
+                        <ul>
+                            <li>Regular review of excluded addresses</li>
+                            <li>Clean up stale DHCP bindings</li>
+                            <li>Implement multiple pools for different device types</li>
+                            <li>Use DHCP conflict detection</li>
+                        </ul>
+                    </li>
+                    <li><strong>Monitoring and Alerts:</strong>
+                        <ul>
+                            <li>Set alerts for >80% pool utilization</li>
+                            <li>Monitor for APIPA addresses on network</li>
+                            <li>Track DHCP lease statistics</li>
+                            <li>Log DHCP failures and exhaustion events</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Solution Verification</h2>
+                <p>After implementing the solution:</p>
+
+                <ol>
+                    <li><strong>Force DHCP Renewal on Affected Devices:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre># On each PC with APIPA:
+PC> ipconfig /release
+PC> ipconfig /renew
+
+# Should now show:
+   IP Address......................: 192.168.1.5
+   Subnet Mask.....................: 255.255.255.0
+   Default Gateway.................: 192.168.1.1</pre>
+                </div>
+
+                <ol start="2">
+                    <li><strong>Verify All Devices Have Valid IPs:</strong></li>
+                </ol>
+                <div class="code-block">
+                    <pre>Router# show ip dhcp binding
+# Should show all 5 devices with 192.168.1.x addresses</pre>
+                </div>
+
+                <ol start="3">
+                    <li><strong>Test Network Connectivity:</strong>
+                        <ul>
+                            <li>All devices can ping the gateway (192.168.1.1)</li>
+                            <li>Internet access restored</li>
+                            <li>No devices showing 169.254.x.x addresses</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Real-World Implementation Example</h2>
+                
+                <h3>Case Study: Small Business Network Growth</h3>
+                <p>A small business with 20 employees experienced network connectivity issues as they grew to 30 employees and added IoT devices.</p>
+                
+                <p><strong>The Problem:</strong></p>
+                <ul>
+                    <li>Original DHCP pool: 192.168.1.2-30 (29 addresses)</li>
+                    <li>30 employees + 15 IoT devices = 45 devices</li>
+                    <li>Only 29 addresses available</li>
+                    <li>Random devices failing to connect daily</li>
+                </ul>
+
+                <p><strong>Investigation Revealed:</strong></p>
+                <ul>
+                    <li>IT admin had excluded 192.168.1.31-254 for "future static assignments"</li>
+                    <li>No documentation of why such large exclusion</li>
+                    <li>Employees working from home some days masked the issue initially</li>
+                </ul>
+
+                <p><strong>Solution Implementation:</strong></p>
+                <div class="code-block">
+                    <pre>Router(config)# no ip dhcp excluded-address 192.168.1.31 192.168.1.254
+Router(config)# ip dhcp excluded-address 192.168.1.200 192.168.1.254
+# Kept 55 addresses for static assignments</pre>
+                </div>
+
+                <p><strong>Outcome:</strong></p>
+                <ul>
+                    <li>Immediate restoration of connectivity for all devices</li>
+                    <li>150+ addresses now available for growth</li>
+                    <li>Implemented monitoring to alert at 70% utilization</li>
+                    <li>Zero DHCP-related issues in following year</li>
+                    <li>Saved 2-3 hours weekly in troubleshooting time</li>
+                </ul>
+            </section>
+
+            <nav class="nav-buttons bottom">
+                <a href="../problem3/index.html" class="nav-btn">← Previous Problem</a>
+                <a href="../../index.html" class="nav-btn home">🏠 Home</a>
+                <a href="../problem5/index.html" class="nav-btn">Next Problem →</a>
+            </nav>
+        </main>
+
+        <footer class="footer">
+            <p>Network Admin Guide - Final Design Project - 2025</p>
+        </footer>
+    </div>
+</body>
+</html>
