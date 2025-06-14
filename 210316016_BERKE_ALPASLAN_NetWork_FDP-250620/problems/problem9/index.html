@@ -64,6 +64,10 @@
 
                <p>The misconfiguration creates a situation where devices that should be in the same broadcast domain (VLAN 20) are actually separated, with one device isolated in VLAN 15.</p>
 
+               <div class="info-box">
+                   <strong>Note:</strong> This simulation is designed to demonstrate VLAN misconfiguration issues. In real network environments, typically each physical location/switch serves a single VLAN/subnet. The mixed configuration shown here (different subnets on the same switch) is purely for clear demonstration of the problem and would be uncommon in production networks.
+               </div>
+
                <div class="warning-box">
                    <strong>Important:</strong> This is one of the most common Layer 2 issues in production networks. Even experienced administrators can overlook VLAN assignments, especially in complex environments with multiple switches and VLANs.
                </div>
